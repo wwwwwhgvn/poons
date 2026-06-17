@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Poon's">
+<meta name="theme-color" content="#F4F1EB">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23D98324'/%3E%3Ctext x='90' y='124' font-family='Georgia,serif' font-size='110' font-weight='600' fill='%23fff' text-anchor='middle'%3EP%3C/text%3E%3C/svg%3E">
+<title>Poon's · 家居存貨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#F4F1EB;--surface:#FFFFFF;--surface-2:#FBF8F2;--ink:#241E17;--muted:#8C8378;--line:#ECE6DC;
+    --honey:#D98324;--honey-deep:#B96910;--honey-soft:#FBEBD2;--danger:#CF3F35;--danger-soft:#FBE3E0;
+    --ok:#3C9D6E;--ok-soft:#E2F1E9;--shadow:0 1px 2px rgba(40,30,15,.05),0 8px 24px rgba(40,30,15,.06);
+    --r:18px;--safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang HK","PingFang SC","Helvetica Neue",sans-serif;
+    background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+  #app{max-width:520px;margin:0 auto;min-height:100%;position:relative}
+
+  header{position:sticky;top:0;z-index:30;padding:calc(var(--safe-t) + 14px) 20px 12px;
+    background:linear-gradient(var(--bg) 78%, rgba(244,241,235,0));backdrop-filter:saturate(1.4) blur(8px)}
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .wordmark{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:34px;line-height:1;letter-spacing:-.01em}
+  .wordmark .apos{color:var(--honey)}
+  .tagline{font-size:12.5px;color:var(--muted);letter-spacing:.02em}
+  .datestrip{margin-top:3px;font-size:12.5px;color:var(--muted)}
+  .searchwrap{margin-top:14px;position:relative}
+  .searchwrap input{width:100%;border:none;border-radius:13px;background:var(--surface);
+    padding:11px 14px 11px 38px;font-size:16px;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+  .searchwrap input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--honey)}
+  .searchwrap .mag{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.5;font-size:15px}
+
+  main{padding:6px 16px 130px}
+  .panel{display:none}.panel.on{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .alert{display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--honey-soft);border-radius:var(--r);
+    padding:13px 15px;margin:8px 4px 14px;box-shadow:inset 0 0 0 1px rgba(217,131,36,.25)}
+  .alert .bell{font-size:20px}
+  .alert .at{font-size:14.5px;font-weight:600;color:var(--honey-deep);line-height:1.25}
+  .alert .as{font-size:12.5px;color:var(--honey-deep);opacity:.8}
+  .alert .go{margin-left:auto;color:var(--honey-deep);font-size:18px;opacity:.7}
+
+  .cat{margin:18px 4px 8px;display:flex;align-items:center;gap:8px}
+  .cat .ico{font-size:16px}.cat .nm{font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--muted)}
+  .cat .ct{margin-left:auto;font-size:12px;color:var(--muted);background:var(--surface);
+    padding:2px 9px;border-radius:20px;box-shadow:inset 0 0 0 1px var(--line)}
+
+  .card{background:var(--surface);border-radius:var(--r);padding:14px 15px;margin:0 0 10px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .card.low::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--danger)}
+  .card .row1{display:flex;align-items:flex-start;gap:10px}
+  .card .name{font-size:17px;font-weight:600;letter-spacing:-.01em}
+  .card .meta{margin-top:3px;display:flex;flex-wrap:wrap;gap:6px 10px;font-size:12px;color:var(--muted)}
+  .card .meta .exp.soon{color:var(--honey-deep);font-weight:600}
+  .card .meta .exp.gone{color:var(--danger);font-weight:600}
+  .badge{font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:3px 8px;border-radius:20px;white-space:nowrap}
+  .badge.low{background:var(--danger-soft);color:var(--danger)}.badge.ok{background:var(--ok-soft);color:var(--ok)}
+  .stepper{margin-left:auto;display:flex;align-items:center;background:var(--surface-2);border-radius:13px;box-shadow:inset 0 0 0 1px var(--line)}
+  .stepper button{width:36px;height:36px;border:none;background:none;font-size:21px;color:var(--honey-deep);font-weight:500;cursor:pointer;line-height:1}
+  .stepper button:active{background:var(--honey-soft)}
+  .stepper .qty{min-width:46px;text-align:center;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+  .stepper .qty small{font-size:11px;font-weight:500;color:var(--muted);margin-left:1px}
+  .gauge{margin-top:11px;height:6px;border-radius:6px;background:var(--line);overflow:hidden}
+  .gauge i{display:block;height:100%;border-radius:6px;transition:width .3s ease}
+  .gauge i.g-low{background:var(--danger)}.gauge i.g-mid{background:var(--honey)}.gauge i.g-ok{background:var(--ok)}
+  .tap{cursor:pointer}
+
+  .empty{text-align:center;padding:64px 24px;color:var(--muted)}
+  .empty .em{font-size:46px}.empty h3{margin:14px 0 6px;font-size:18px;color:var(--ink)}
+  .empty p{margin:0 0 20px;font-size:14px;line-height:1.5}
+  .ghostbtn{background:none;border:none;color:var(--honey-deep);font-size:14px;font-weight:600;cursor:pointer}
+
+  .rsum{display:flex;gap:10px;margin:10px 4px 16px}
+  .stat{flex:1;background:var(--surface);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+  .stat .n{font-size:26px;font-weight:700;font-family:"Fraunces",serif;line-height:1}
+  .stat .l{margin-top:5px;font-size:12px;color:var(--muted)}
+  .stat.warn .n{color:var(--danger)}.stat.money .n{color:var(--honey-deep)}
+  .ritem{display:flex;align-items:center;gap:13px;background:var(--surface);border-radius:var(--r);padding:13px 15px;margin:0 0 9px;box-shadow:var(--shadow)}
+  .check{width:24px;height:24px;border-radius:50%;flex:none;cursor:pointer;box-shadow:inset 0 0 0 2px var(--line);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;transition:.15s}
+  .check.done{background:var(--ok);box-shadow:none}
+  .ritem .rn{font-size:16px;font-weight:600}.ritem.done .rn{text-decoration:line-through;color:var(--muted)}
+  .ritem .rmeta{font-size:12px;color:var(--muted);margin-top:2px}.ritem .rmeta b{color:var(--danger);font-weight:600}
+  .restockbtn{margin-left:auto;border:none;background:var(--honey-soft);color:var(--honey-deep);font-size:13px;font-weight:600;padding:8px 13px;border-radius:11px;cursor:pointer;white-space:nowrap}
+  .restockbtn:active{background:var(--honey);color:#fff}
+
+  .group{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);margin:8px 4px 16px;overflow:hidden}
+  .grow{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .grow:last-child{border-bottom:none}.grow .gl{font-size:15px}
+  .grow .gv{margin-left:auto;color:var(--muted);font-size:15px;display:flex;align-items:center;gap:6px}
+  .grow input[type=text],.grow input[type=number]{border:none;text-align:right;font-size:15px;color:var(--ink);background:none;max-width:160px;font-family:inherit}
+  .grow input:focus{outline:none;color:var(--honey-deep)}
+  .grow.tap:active{background:var(--surface-2)}.grow .danger{color:var(--danger)}
+  .ghead{font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--muted);margin:18px 8px 0;text-transform:uppercase}
+  .footnote{text-align:center;font-size:11.5px;color:var(--muted);margin:8px 16px 0;line-height:1.5}
+
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:40;max-width:520px;margin:0 auto;display:flex;
+    background:rgba(255,255,255,.86);backdrop-filter:saturate(1.6) blur(18px);border-top:1px solid var(--line);padding-bottom:var(--safe-b)}
+  nav button{flex:1;border:none;background:none;padding:9px 0 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);position:relative}
+  nav button .ti{font-size:21px;line-height:1}nav button .tl{font-size:10.5px;font-weight:500;letter-spacing:.02em}
+  nav button.on{color:var(--honey-deep)}
+  nav .navbadge{position:absolute;top:4px;left:calc(50% + 8px);min-width:17px;height:17px;background:var(--danger);color:#fff;
+    border-radius:10px;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 0 0 2px #fff}
+
+  .fab{position:fixed;z-index:41;right:calc(50% - 260px + 20px);bottom:calc(var(--safe-b) + 74px);width:56px;height:56px;
+    border-radius:50%;border:none;background:var(--honey);color:#fff;font-size:30px;line-height:1;cursor:pointer;
+    box-shadow:0 6px 18px rgba(217,131,36,.45);display:flex;align-items:center;justify-content:center;transition:transform .12s}
+  @media(max-width:520px){.fab{right:20px}}.fab:active{transform:scale(.92)}
+
+  .scrim{position:fixed;inset:0;z-index:50;background:rgba(30,22,12,.4);opacity:0;pointer-events:none;transition:.25s}
+  .scrim.on{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:520px;margin:0 auto;background:var(--bg);
+    border-radius:22px 22px 0 0;padding:8px 20px calc(var(--safe-b) + 22px);transform:translateY(110%);
+    transition:transform .3s cubic-bezier(.32,.72,0,1);max-height:92vh;overflow-y:auto}
+  .sheet.on{transform:none}
+  .grab{width:38px;height:5px;border-radius:5px;background:#d9d2c6;margin:8px auto 6px}
+  .sheet h2{font-size:20px;margin:6px 2px 16px;display:flex;align-items:center}
+  .sheet h2 .x{margin-left:auto;width:30px;height:30px;border:none;border-radius:50%;background:var(--line);color:var(--muted);font-size:17px;cursor:pointer}
+  label.fld{display:block;margin-bottom:13px}
+  label.fld .lt{font-size:12.5px;font-weight:600;color:var(--muted);margin:0 0 6px 3px;letter-spacing:.02em}
+  .inp{width:100%;border:none;border-radius:13px;background:var(--surface);padding:13px 14px;font-size:16px;color:var(--ink);font-family:inherit;box-shadow:inset 0 0 0 1px var(--line)}
+  .inp:focus{outline:none;box-shadow:inset 0 0 0 2px var(--honey)}
+  textarea.inp{min-height:90px;resize:vertical;font-size:13px;line-height:1.4;word-break:break-all}
+  .two{display:flex;gap:11px}.two>label{flex:1}
+  .namewrap{position:relative}
+  .scanbtn{position:absolute;right:6px;top:6px;border:none;background:var(--honey-soft);color:var(--honey-deep);
+    font-size:13px;font-weight:600;padding:8px 11px;border-radius:9px;cursor:pointer}
+  .scanbtn:active{background:var(--honey);color:#fff}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:none;border-radius:11px;background:var(--surface);padding:9px 13px;font-size:14px;color:var(--ink);cursor:pointer;
+    box-shadow:inset 0 0 0 1px var(--line);font-family:inherit;display:flex;gap:5px;align-items:center}
+  .chip.on{background:var(--honey);color:#fff;box-shadow:none}
+  .save{width:100%;border:none;border-radius:14px;background:var(--honey);color:#fff;font-size:16px;font-weight:600;padding:15px;margin-top:6px;cursor:pointer;font-family:inherit}
+  .save:active{background:var(--honey-deep)}
+  .save.alt{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);margin-top:10px}
+  .delbtn{width:100%;border:none;background:none;color:var(--danger);font-size:14.5px;font-weight:600;padding:14px;margin-top:6px;cursor:pointer;font-family:inherit}
+  .sheet p.note{font-size:13px;color:var(--muted);line-height:1.5;margin:0 2px 14px}
+  .steps{counter-reset:s;margin:0 0 14px;padding:0;list-style:none}
+  .steps li{position:relative;padding:0 0 14px 40px;font-size:14.5px;line-height:1.45}
+  .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:-2px;width:26px;height:26px;
+    background:var(--honey);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+  .steps li b{display:block;color:var(--ink)}.steps li span{color:var(--muted);font-size:12.5px}
+
+  /* scanner overlay */
+  .scanner{position:fixed;inset:0;z-index:70;background:#000;display:none;flex-direction:column}
+  .scanner.on{display:flex}
+  #reader{flex:1;width:100%;overflow:hidden}
+  #reader video{object-fit:cover}
+  .scanbar{padding:calc(var(--safe-t) + 14px) 20px 14px;color:#fff;display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.5)}
+  .scanbar .st{font-size:16px;font-weight:600}.scanbar .ss{font-size:12px;opacity:.7}
+  .scanbar button{margin-left:auto;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;padding:8px 14px;border-radius:20px;cursor:pointer}
+  .scanmsg{padding:18px 20px calc(var(--safe-b) + 18px);background:rgba(0,0,0,.6);color:#fff;font-size:13.5px;line-height:1.5;text-align:center;display:none}
+  .scanmsg.on{display:block}
+
+  .toast{position:fixed;left:50%;bottom:calc(var(--safe-b) + 96px);transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;font-size:13.5px;padding:10px 18px;border-radius:22px;z-index:80;opacity:0;transition:.25s;pointer-events:none;max-width:90%;text-align:center}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+  .loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:100;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="loading" id="loading">載入緊…</div>
+  <header>
+    <div class="brand"><span class="wordmark" id="wordmark">Poon<span class="apos">'</span>s</span><span class="tagline">家居存貨</span></div>
+    <div class="datestrip" id="datestrip"></div>
+    <div class="searchwrap"><span class="mag">🔍</span><input id="search" placeholder="搵存貨…" autocomplete="off"></div>
+  </header>
+  <main>
+    <section class="panel on" id="p-stock"></section>
+    <section class="panel" id="p-restock"></section>
+    <section class="panel" id="p-settings"></section>
+  </main>
+  <button class="fab" id="fab" aria-label="新增存貨">+</button>
+  <nav>
+    <button class="on" data-tab="stock"><span class="ti">📦</span><span class="tl">存貨</span></button>
+    <button data-tab="restock"><span class="ti">🛒</span><span class="tl">補貨</span><span class="navbadge" id="navbadge" style="display:none">0</span></button>
+    <button data-tab="settings"><span class="ti">⚙️</span><span class="tl">設定</span></button>
+  </nav>
+</div>
+
+<!-- Add / edit sheet -->
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet">
+  <div class="grab"></div>
+  <h2 id="sheetTitle">新增存貨 <button class="x" id="sheetClose">✕</button></h2>
+  <label class="fld"><div class="lt">名稱</div>
+    <div class="namewrap"><input class="inp" id="f-name" placeholder="例如:白米、廁紙、生抽" autocomplete="off" style="padding-right:90px">
+    <button type="button" class="scanbtn" id="scanOpen">📷 掃描</button></div></label>
+  <label class="fld"><div class="lt">分類</div><div class="chips" id="catChips"></div></label>
+  <div class="two">
+    <label class="fld"><div class="lt">數量</div><input class="inp" id="f-qty" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></label>
+    <label class="fld"><div class="lt">單位</div><input class="inp" id="f-unit" placeholder="件 / 支 / 包" autocomplete="off"></label>
+  </div>
+  <div class="two">
+    <label class="fld"><div class="lt">最低存量(提醒線)</div><input class="inp" id="f-threshold" type="number" inputmode="decimal" min="0" step="any" placeholder="1"></label>
+    <label class="fld"><div class="lt">參考價 HK$</div><input class="inp" id="f-price" type="number" inputmode="decimal" min="0" step="any" placeholder="—"></label>
+  </div>
+  <div class="two">
+    <label class="fld"><div class="lt">存放位置</div><input class="inp" id="f-loc" placeholder="雪櫃 / 廚櫃 / 儲物房" autocomplete="off"></label>
+    <label class="fld"><div class="lt">到期日</div><input class="inp" id="f-expiry" type="date"></label>
+  </div>
+  <button class="save" id="saveBtn">儲存</button>
+  <button class="delbtn" id="delBtn" style="display:none">刪除呢項存貨</button>
+</div>
+
+<!-- Sync sheet -->
+<div class="sheet" id="syncSheet">
+  <div class="grab"></div>
+  <h2>全家同步 <button class="x" id="syncClose">✕</button></h2>
+  <p class="note">同步碼包住你而家全部存貨。傳俾屋企人(WhatsApp / AirDrop 都得),佢喺自己部機㩒「匯入」貼上去,大家就一樣。</p>
+  <label class="fld"><div class="lt">你嘅同步碼(㩒一下複製)</div>
+    <textarea class="inp" id="exportCode" readonly onclick="this.select()"></textarea></label>
+  <button class="save" id="copyCode">📋 複製同步碼</button>
+  <button class="save alt" id="dlCode">⬇️ 下載做檔案備份</button>
+  <div style="height:18px"></div>
+  <label class="fld"><div class="lt">匯入別人嘅同步碼</div>
+    <textarea class="inp" id="importCode" placeholder="喺度貼上同步碼…"></textarea></label>
+  <button class="save" id="doImport">🔄 合併匯入</button>
+  <p class="note" style="margin-top:12px">合併:同名存貨會更新,新嘅會加入,你獨有嘅唔會無咗。</p>
+</div>
+
+<!-- Add to home sheet -->
+<div class="sheet" id="homeSheet">
+  <div class="grab"></div>
+  <h2>加到 iPhone 主畫面 <button class="x" id="homeClose">✕</button></h2>
+  <p class="note">咁樣就可以好似真 app 全螢幕開,圖示放喺主畫面,資料留喺部機。</p>
+  <ol class="steps">
+    <li><b>用 Safari 開呢一頁</b><span>一定要 Safari,Chrome 唔得</span></li>
+    <li><b>㩒底部中間嘅分享掣 ⬆️</b><span>iPhone 喺底、iPad 喺右上角</span></li>
+    <li><b>揀「加入主畫面 / Add to Home Screen」</b><span>主畫面會出現 Poon's 圖示</span></li>
+  </ol>
+  <p class="note">⚠️ 資料儲喺部機。如果清咗 Safari 嘅網站資料就會無,記得不時用上面嘅「同步碼」備份。</p>
+  <button class="save" id="homeOk">明白</button>
+</div>
+
+<!-- Scanner -->
+<div class="scanner" id="scanner">
+  <div class="scanbar"><div><div class="st">掃描條碼</div><div class="ss">對準產品條碼</div></div><button id="scanCancel">取消</button></div>
+  <div id="reader"></div>
+  <div class="scanmsg" id="scanmsg"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CATS=[{k:'糧食',i:'🍚'},{k:'飲料',i:'🥤'},{k:'日常用品',i:'🧻'},{k:'清潔',i:'🧴'},{k:'急凍食品',i:'🧊'},{k:'醬料',i:'🫙'},{k:'其他',i:'📦'}];
+const catIcon=k=>(CATS.find(c=>c.k===k)||CATS[6]).i;
+const SAMPLE=[
+  {name:'白米',cat:'糧食',unit:'kg',qty:8,threshold:3,loc:'廚櫃',price:60,expiry:''},
+  {name:'雞蛋',cat:'糧食',unit:'隻',qty:2,threshold:6,loc:'雪櫃',price:28,expiry:addDays(9)},
+  {name:'廁紙',cat:'日常用品',unit:'卷',qty:4,threshold:6,loc:'儲物房',price:45,expiry:''},
+  {name:'生抽',cat:'醬料',unit:'支',qty:1,threshold:1,loc:'廚櫃',price:18,expiry:''},
+  {name:'蒸餾水',cat:'飲料',unit:'支',qty:12,threshold:4,loc:'儲物房',price:35,expiry:''},
+  {name:'洗潔精',cat:'清潔',unit:'支',qty:1,threshold:1,loc:'廚房',price:22,expiry:''},
+];
+const KEY='poons:state';
+let state={family:"Poon's",items:[],settings:{defaultThreshold:1},restocked:{}};
+let activeTab='stock',search='',editingId=null,pickedCat='糧食',scannedBarcode='';
+
+function addDays(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function money(n){return n==null||n===''?null:Number(n);}
+
+/* ---- robust storage: localStorage (hosted) → window.storage (in Claude) → memory ---- */
+let mem=null;
+const Store={
+  async get(){
+    try{const v=localStorage.getItem(KEY);if(v!=null)return v;}catch(e){}
+    if(window.storage){try{const r=await window.storage.get(KEY,false);if(r&&r.value)return r.value;}catch(e){}}
+    return mem;
+  },
+  async set(v){
+    mem=v;let ok=false;
+    try{localStorage.setItem(KEY,v);ok=true;}catch(e){}
+    if(!ok&&window.storage){try{await window.storage.set(KEY,v,false);}catch(e){}}
+  }
+};
+async function load(){const raw=await Store.get();if(raw){try{state=Object.assign(state,JSON.parse(raw));}catch(e){}}if(!state.restocked)state.restocked={};}
+async function save(){await Store.set(JSON.stringify(state));}
+
+function isLow(it){return Number(it.qty)<=Number(it.threshold||0);}
+function expInfo(it){
+  if(!it.expiry)return null;
+  const days=Math.round((new Date(it.expiry+'T00:00')-new Date(new Date().toDateString()))/86400000);
+  if(days<0)return{cls:'gone',txt:'已過期'};
+  if(days<=7)return{cls:'soon',txt:days===0?'今日到期':days+'日後到期'};
+  return{cls:'',txt:'到期 '+it.expiry.slice(5)};
+}
+function lowItems(){return state.items.filter(isLow);}
+function expiringItems(){return state.items.filter(it=>{const e=expInfo(it);return e&&(e.cls==='soon'||e.cls==='gone');});}
+function restockList(){const m=new Map();lowItems().forEach(i=>m.set(i.id,i));expiringItems().forEach(i=>m.set(i.id,i));return[...m.values()];}
+
+function renderStock(){
+  const el=document.getElementById('p-stock');
+  let items=state.items.slice();
+  if(search){const q=search.toLowerCase();items=items.filter(i=>i.name.toLowerCase().includes(q)||i.cat.includes(q)||(i.loc||'').toLowerCase().includes(q));}
+  let html='';const lows=lowItems().length;
+  if(lows>0&&!search)html+=`<div class="alert" onclick="go('restock')"><span class="bell">🔔</span><div><div class="at">${lows} 樣嘢要補貨</div><div class="as">已經跌到最低存量或以下</div></div><span class="go">›</span></div>`;
+  if(items.length===0){
+    el.innerHTML=search?`<div class="empty"><div class="em">🔍</div><h3>搵唔到「${escapeHtml(search)}」</h3><p>試下第個名,或者撳右下角 + 加入。</p></div>`
+      :`<div class="empty"><div class="em">📦</div><h3>仲未有存貨</h3><p>撳右下角 <b>+</b> 加入你屋企嘅嘢,<br>跌到最低存量就會自動提你補貨。</p><button class="ghostbtn" onclick="loadSample()">＋ 加入示範存貨</button></div>`;
+    return;
+  }
+  CATS.forEach(c=>{
+    const inCat=items.filter(i=>i.cat===c.k);if(!inCat.length)return;
+    inCat.sort((a,b)=>(isLow(b)-isLow(a))||a.name.localeCompare(b.name));
+    html+=`<div class="cat"><span class="ico">${c.i}</span><span class="nm">${c.k}</span><span class="ct">${inCat.length}</span></div>`;
+    inCat.forEach(it=>html+=cardHtml(it));
+  });
+  el.innerHTML=html;
+}
+function cardHtml(it){
+  const low=isLow(it),e=expInfo(it),th=Number(it.threshold||0);
+  const pct=th>0?Math.max(0,Math.min(100,(Number(it.qty)/(th*2))*100)):(it.qty>0?100:0);
+  const gcls=low?'g-low':(pct<=70?'g-mid':'g-ok');
+  const unit=it.unit?`<small>${escapeHtml(it.unit)}</small>`:'';
+  let meta=[];if(it.loc)meta.push(`📍${escapeHtml(it.loc)}`);if(e)meta.push(`<span class="exp ${e.cls}">⏳${e.txt}</span>`);meta.push(`最低 ${fmt(th)}${escapeHtml(it.unit||'')}`);
+  return `<div class="card ${low?'low':''}"><div class="row1">
+    <div class="tap" onclick="openEdit('${it.id}')" style="flex:1;min-width:0">
+      <div class="name">${escapeHtml(it.name)} ${low?'<span class="badge low">需補貨</span>':'<span class="badge ok">充足</span>'}</div>
+      <div class="meta">${meta.join('')}</div></div>
+    <div class="stepper"><button onclick="bump('${it.id}',-1)">−</button><span class="qty">${fmt(it.qty)}${unit}</span><button onclick="bump('${it.id}',1)">+</button></div>
+  </div><div class="gauge"><i class="${gcls}" style="width:${pct}%"></i></div></div>`;
+}
+function renderRestock(){
+  const el=document.getElementById('p-restock'),list=restockList();
+  const cost=list.reduce((s,it)=>{const need=Math.max(0,Number(it.threshold||0)*2-Number(it.qty));const per=money(it.price);return s+(per?per*Math.max(1,Math.ceil(need||1)):0);},0);
+  if(list.length===0){el.innerHTML=`<div class="empty"><div class="em">✅</div><h3>樣樣充足</h3><p>暫時冇嘢跌穿最低存量,<br>都冇嘢快到期。</p></div>`;return;}
+  let html=`<div class="rsum"><div class="stat warn"><div class="n">${list.length}</div><div class="l">需要補貨</div></div><div class="stat money"><div class="n">$${Math.round(cost)}</div><div class="l">預計花費</div></div></div>`;
+  list.forEach(it=>{
+    const done=!!state.restocked[it.id],e=expInfo(it);let why=[];
+    if(isLow(it))why.push(`剩 <b>${fmt(it.qty)}${escapeHtml(it.unit||'')}</b> · 最低 ${fmt(it.threshold)}`);
+    if(e&&(e.cls==='soon'||e.cls==='gone'))why.push(`⏳${e.txt}`);
+    html+=`<div class="ritem ${done?'done':''}"><div class="check ${done?'done':''}" onclick="toggleDone('${it.id}')">${done?'✓':''}</div>
+      <div style="flex:1;min-width:0"><div class="rn">${catIcon(it.cat)} ${escapeHtml(it.name)}</div><div class="rmeta">${why.join(' · ')}</div></div>
+      <button class="restockbtn" onclick="quickRestock('${it.id}')">補貨</button></div>`;
+  });
+  el.innerHTML=html;
+}
+function renderSettings(){
+  const el=document.getElementById('p-settings');
+  el.innerHTML=`
+    <div class="ghead">家庭</div>
+    <div class="group">
+      <div class="grow"><span class="gl">家庭名稱</span><span class="gv"><input type="text" id="s-family" value="${escapeHtml(state.family)}"></span></div>
+      <div class="grow"><span class="gl">預設最低存量</span><span class="gv"><input type="number" id="s-th" min="0" step="any" value="${state.settings.defaultThreshold}"> 件</span></div>
+    </div>
+    <div class="ghead">同步 / 安裝</div>
+    <div class="group">
+      <div class="grow tap" onclick="openSync()"><span class="gl">🔄 全家同步(同步碼)</span><span class="gv">›</span></div>
+      <div class="grow tap" onclick="openHome()"><span class="gl">📱 加到主畫面</span><span class="gv">›</span></div>
+    </div>
+    <div class="ghead">概覽</div>
+    <div class="group">
+      <div class="grow"><span class="gl">存貨總數</span><span class="gv">${state.items.length} 樣</span></div>
+      <div class="grow"><span class="gl">需補貨</span><span class="gv" style="color:var(--danger)">${lowItems().length} 樣</span></div>
+      <div class="grow"><span class="gl">快到期 / 過期</span><span class="gv" style="color:var(--honey-deep)">${expiringItems().length} 樣</span></div>
+    </div>
+    <div class="ghead">資料</div>
+    <div class="group">
+      <div class="grow tap" onclick="loadSample()"><span class="gl">加入示範存貨</span><span class="gv">›</span></div>
+      <div class="grow tap" onclick="clearDone()"><span class="gl">清除「已補貨」剔號</span><span class="gv">›</span></div>
+      <div class="grow tap" onclick="wipe()"><span class="gl danger">清除全部資料</span><span class="gv">›</span></div>
+    </div>
+    <p class="footnote">資料儲喺呢部機。記得不時用「同步碼」備份。</p>`;
+  document.getElementById('s-family').addEventListener('change',e=>{state.family=e.target.value.trim()||"Poon's";applyWordmark();save();});
+  document.getElementById('s-th').addEventListener('change',e=>{state.settings.defaultThreshold=Number(e.target.value)||0;save();});
+}
+
+function rerender(){updateBadge();if(activeTab==='stock')renderStock();else if(activeTab==='restock')renderRestock();else renderSettings();}
+function updateBadge(){const n=lowItems().length,b=document.getElementById('navbadge');b.style.display=n>0?'flex':'none';b.textContent=n;}
+function go(tab){
+  activeTab=tab;
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  document.getElementById('p-stock').classList.toggle('on',tab==='stock');
+  document.getElementById('p-restock').classList.toggle('on',tab==='restock');
+  document.getElementById('p-settings').classList.toggle('on',tab==='settings');
+  document.querySelector('header .searchwrap').style.display=tab==='stock'?'block':'none';
+  rerender();window.scrollTo({top:0});
+}
+async function bump(id,d){const it=state.items.find(i=>i.id===id);if(!it)return;const step=(Number(it.qty)%1!==0||Number(it.threshold)%1!==0)?0.5:1;it.qty=Math.max(0,Math.round((Number(it.qty)+d*step)*100)/100);await save();rerender();}
+async function toggleDone(id){state.restocked[id]=!state.restocked[id];await save();rerender();}
+async function quickRestock(id){const it=state.items.find(i=>i.id===id);if(!it)return;const target=Number(it.threshold||0)*2||(Number(it.qty)+1);it.qty=Math.max(target,Number(it.qty)+1);delete state.restocked[id];await save();rerender();toast(`${it.name} 已補貨到 ${fmt(it.qty)}${it.unit||''}`);}
+async function clearDone(){state.restocked={};await save();rerender();toast('已清除剔號');}
+async function loadSample(){const ex=new Set(state.items.map(i=>i.name));SAMPLE.forEach(s=>{if(!ex.has(s.name))state.items.push(Object.assign({id:uid()},s));});await save();go('stock');toast('已加入示範存貨');}
+async function wipe(){if(!confirm('確定清除全部存貨資料?無法復原。'))return;state.items=[];state.restocked={};await save();rerender();toast('已清除');}
+
+/* ---- sheets ---- */
+function buildCatChips(){
+  document.getElementById('catChips').innerHTML=CATS.map(c=>`<button type="button" class="chip ${c.k===pickedCat?'on':''}" data-cat="${c.k}">${c.i} ${c.k}</button>`).join('');
+  document.querySelectorAll('#catChips .chip').forEach(b=>b.onclick=()=>{pickedCat=b.dataset.cat;document.querySelectorAll('#catChips .chip').forEach(x=>x.classList.toggle('on',x.dataset.cat===pickedCat));});
+}
+function openSheetEl(id){document.getElementById('scrim').classList.add('on');document.getElementById(id).classList.add('on');}
+function closeAllSheets(){document.getElementById('scrim').classList.remove('on');['sheet','syncSheet','homeSheet'].forEach(i=>document.getElementById(i).classList.remove('on'));}
+function openAdd(){
+  editingId=null;pickedCat='糧食';scannedBarcode='';
+  document.getElementById('sheetTitle').childNodes[0].nodeValue='新增存貨 ';
+  ['name','qty','unit','price','loc','expiry'].forEach(f=>document.getElementById('f-'+f).value='');
+  document.getElementById('f-threshold').value=state.settings.defaultThreshold;
+  document.getElementById('delBtn').style.display='none';buildCatChips();openSheetEl('sheet');
+  setTimeout(()=>document.getElementById('f-name').focus(),300);
+}
+function openEdit(id){
+  const it=state.items.find(i=>i.id===id);if(!it)return;
+  editingId=id;pickedCat=it.cat;scannedBarcode=it.barcode||'';
+  document.getElementById('sheetTitle').childNodes[0].nodeValue='編輯存貨 ';
+  document.getElementById('f-name').value=it.name;document.getElementById('f-qty').value=it.qty;
+  document.getElementById('f-unit').value=it.unit||'';document.getElementById('f-threshold').value=it.threshold;
+  document.getElementById('f-price').value=it.price??'';document.getElementById('f-loc').value=it.loc||'';
+  document.getElementById('f-expiry').value=it.expiry||'';
+  document.getElementById('delBtn').style.display='block';buildCatChips();openSheetEl('sheet');
+}
+async function saveItem(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){toast('請填名稱');document.getElementById('f-name').focus();return;}
+  const data={name,cat:pickedCat,qty:Number(document.getElementById('f-qty').value)||0,
+    unit:document.getElementById('f-unit').value.trim(),threshold:Number(document.getElementById('f-threshold').value)||0,
+    price:document.getElementById('f-price').value===''?null:Number(document.getElementById('f-price').value),
+    loc:document.getElementById('f-loc').value.trim(),expiry:document.getElementById('f-expiry').value,barcode:scannedBarcode||''};
+  if(editingId)Object.assign(state.items.find(i=>i.id===editingId),data);
+  else state.items.push(Object.assign({id:uid()},data));
+  await save();closeAllSheets();go('stock');toast(editingId?'已更新':'已加入存貨');
+}
+async function delItem(){if(!editingId)return;if(!confirm('刪除呢項存貨?'))return;state.items=state.items.filter(i=>i.id!==editingId);delete state.restocked[editingId];await save();closeAllSheets();rerender();toast('已刪除');}
+
+/* ---- sync ---- */
+function encode(){return btoa(unescape(encodeURIComponent(JSON.stringify({v:1,family:state.family,items:state.items}))));}
+function openSync(){closeAllSheets();document.getElementById('exportCode').value=encode();document.getElementById('importCode').value='';openSheetEl('syncSheet');}
+function copyCode(){const t=document.getElementById('exportCode');t.select();navigator.clipboard?.writeText(t.value).then(()=>toast('已複製同步碼'),()=>{document.execCommand('copy');toast('已複製');});}
+function dlCode(){const blob=new Blob([encode()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='poons-backup-'+new Date().toISOString().slice(0,10)+'.txt';a.click();toast('已下載備份');}
+async function doImport(){
+  const raw=document.getElementById('importCode').value.trim();if(!raw){toast('請貼上同步碼');return;}
+  let data;try{data=JSON.parse(decodeURIComponent(escape(atob(raw))));}catch(e){toast('同步碼讀唔到,請檢查');return;}
+  if(!data||!Array.isArray(data.items)){toast('同步碼格式唔啱');return;}
+  const byName=new Map(state.items.map(i=>[i.name+'|'+i.cat,i]));
+  let added=0,upd=0;
+  data.items.forEach(d=>{const k=d.name+'|'+d.cat;if(byName.has(k)){Object.assign(byName.get(k),d,{id:byName.get(k).id});upd++;}else{state.items.push(Object.assign({id:uid()},d,{id:uid()}));added++;}});
+  await save();closeAllSheets();go('stock');toast(`匯入完成:新增 ${added}、更新 ${upd}`);
+}
+function openHome(){closeAllSheets();openSheetEl('homeSheet');}
+
+/* ---- barcode scanner ---- */
+let qr=null;
+async function openScanner(){
+  const sc=document.getElementById('scanner');document.getElementById('scanmsg').classList.remove('on');
+  if(typeof Html5Qrcode==='undefined'){scanFail('掃描元件載入唔到,請檢查網絡。你可以直接打名。');sc.classList.add('on');return;}
+  sc.classList.add('on');
+  try{
+    qr=new Html5Qrcode('reader',{formatsToSupport:[
+      Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODE_128]});
+    await qr.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:160}},onScan,()=>{});
+  }catch(e){scanFail('開唔到鏡頭。請喺 Safari 用、容許鏡頭權限,而且個網址要係 https。');}
+}
+async function onScan(code){
+  await stopScanner();
+  document.getElementById('scanner').classList.add('on');
+  showScanMsg('🔍 搵緊產品…');
+  const nm=await lookupBarcode(code);
+  scannedBarcode=code;
+  const f=document.getElementById('f-name');
+  if(nm){if(!f.value)f.value=nm;toast('已識別:'+nm);}else{toast('條碼已記低('+code+'),請自己打名');}
+  document.getElementById('scanner').classList.remove('on');
+}
+async function lookupBarcode(code){
+  try{
+    const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,brands`);
+    const j=await r.json();
+    if(j.status===1&&j.product){return (j.product.brands?j.product.brands.split(',')[0]+' ':'')+(j.product.product_name||'').trim();}
+  }catch(e){}
+  return '';
+}
+function showScanMsg(t){const m=document.getElementById('scanmsg');m.textContent=t;m.classList.add('on');}
+function scanFail(t){showScanMsg(t);}
+async function stopScanner(){if(qr){try{await qr.stop();await qr.clear();}catch(e){}qr=null;}}
+async function closeScanner(){await stopScanner();document.getElementById('scanner').classList.remove('on');}
+
+/* ---- util ---- */
+function fmt(n){n=Number(n);return Number.isInteger(n)?n:Math.round(n*100)/100;}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+let toastT;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),1900);}
+function applyWordmark(){const w=document.getElementById('wordmark');if(state.family&&state.family!=="Poon's")w.innerHTML=escapeHtml(state.family);else w.innerHTML='Poon<span class="apos">\'</span>s';}
+
+/* ---- wire ---- */
+document.getElementById('fab').onclick=openAdd;
+document.getElementById('sheetClose').onclick=closeAllSheets;
+document.getElementById('scrim').onclick=closeAllSheets;
+document.getElementById('saveBtn').onclick=saveItem;
+document.getElementById('delBtn').onclick=delItem;
+document.getElementById('scanOpen').onclick=openScanner;
+document.getElementById('scanCancel').onclick=closeScanner;
+document.getElementById('syncClose').onclick=closeAllSheets;
+document.getElementById('homeClose').onclick=closeAllSheets;
+document.getElementById('homeOk').onclick=closeAllSheets;
+document.getElementById('copyCode').onclick=copyCode;
+document.getElementById('dlCode').onclick=dlCode;
+document.getElementById('doImport').onclick=doImport;
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+document.getElementById('search').addEventListener('input',e=>{search=e.target.value.trim();renderStock();});
+
+(function(){const d=new Date(),wd=['日','一','二','三','四','五','六'][d.getDay()];document.getElementById('datestrip').textContent=`${d.getMonth()+1}月${d.getDate()}日 · 星期${wd}`;})();
+(async function init(){await load();applyWordmark();document.getElementById('loading').style.display='none';rerender();})();
+</script>
+</body>
+</html>
