@@ -33,6 +33,9 @@
   .wordmark{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:34px;line-height:1;letter-spacing:-.01em}
   .wordmark .apos{color:var(--honey)}
   .tagline{font-size:12.5px;color:var(--muted);letter-spacing:.02em}
+  .cloudpin{margin-left:auto;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;align-self:center}
+  .cloudpin.on{background:var(--ok-soft);color:var(--ok)}
+  .cloudpin.off{background:var(--line);color:var(--muted)}
   .datestrip{margin-top:3px;font-size:12.5px;color:var(--muted)}
   .searchwrap{margin-top:14px;position:relative}
   .searchwrap input{width:100%;border:none;border-radius:13px;background:var(--surface);
@@ -152,11 +155,9 @@
     background:var(--honey);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
   .steps li b{display:block;color:var(--ink)}.steps li span{color:var(--muted);font-size:12.5px}
 
-  /* scanner overlay */
   .scanner{position:fixed;inset:0;z-index:70;background:#000;display:none;flex-direction:column}
   .scanner.on{display:flex}
-  #reader{flex:1;width:100%;overflow:hidden}
-  #reader video{object-fit:cover}
+  #reader{flex:1;width:100%;overflow:hidden}#reader video{object-fit:cover}
   .scanbar{padding:calc(var(--safe-t) + 14px) 20px 14px;color:#fff;display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.5)}
   .scanbar .st{font-size:16px;font-weight:600}.scanbar .ss{font-size:12px;opacity:.7}
   .scanbar button{margin-left:auto;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:15px;padding:8px 14px;border-radius:20px;cursor:pointer}
@@ -173,7 +174,8 @@
 <div id="app">
   <div class="loading" id="loading">載入緊…</div>
   <header>
-    <div class="brand"><span class="wordmark" id="wordmark">Poon<span class="apos">'</span>s</span><span class="tagline">家居存貨</span></div>
+    <div class="brand"><span class="wordmark" id="wordmark">Poon<span class="apos">'</span>s</span><span class="tagline">家居存貨</span>
+      <span class="cloudpin off" id="cloudpin">●未連</span></div>
     <div class="datestrip" id="datestrip"></div>
     <div class="searchwrap"><span class="mag">🔍</span><input id="search" placeholder="搵存貨…" autocomplete="off"></div>
   </header>
@@ -190,8 +192,9 @@
   </nav>
 </div>
 
-<!-- Add / edit sheet -->
 <div class="scrim" id="scrim"></div>
+
+<!-- Add / edit sheet -->
 <div class="sheet" id="sheet">
   <div class="grab"></div>
   <h2 id="sheetTitle">新增存貨 <button class="x" id="sheetClose">✕</button></h2>
@@ -215,33 +218,33 @@
   <button class="delbtn" id="delBtn" style="display:none">刪除呢項存貨</button>
 </div>
 
-<!-- Sync sheet -->
-<div class="sheet" id="syncSheet">
-  <div class="grab"></div>
-  <h2>全家同步 <button class="x" id="syncClose">✕</button></h2>
-  <p class="note">同步碼包住你而家全部存貨。傳俾屋企人(WhatsApp / AirDrop 都得),佢喺自己部機㩒「匯入」貼上去,大家就一樣。</p>
-  <label class="fld"><div class="lt">你嘅同步碼(㩒一下複製)</div>
-    <textarea class="inp" id="exportCode" readonly onclick="this.select()"></textarea></label>
-  <button class="save" id="copyCode">📋 複製同步碼</button>
+<!-- Cloud sheet -->
+<div class="sheet" id="cloudSheet"><div class="grab"></div>
+  <h2>雲端同步(即時) <button class="x" id="cloudClose">✕</button></h2>
+  <div id="cloudBody"></div>
+</div>
+
+<!-- Backup sheet -->
+<div class="sheet" id="syncSheet"><div class="grab"></div>
+  <h2>備份 / 匯出 <button class="x" id="syncClose">✕</button></h2>
+  <p class="note">呢個係離線備份用。日常全家同步建議用上面嘅「雲端同步」。</p>
+  <label class="fld"><div class="lt">同步碼(㩒一下複製)</div><textarea class="inp" id="exportCode" readonly onclick="this.select()"></textarea></label>
+  <button class="save" id="copyCode">📋 複製</button>
   <button class="save alt" id="dlCode">⬇️ 下載做檔案備份</button>
   <div style="height:18px"></div>
-  <label class="fld"><div class="lt">匯入別人嘅同步碼</div>
-    <textarea class="inp" id="importCode" placeholder="喺度貼上同步碼…"></textarea></label>
+  <label class="fld"><div class="lt">匯入同步碼</div><textarea class="inp" id="importCode" placeholder="喺度貼上…"></textarea></label>
   <button class="save" id="doImport">🔄 合併匯入</button>
-  <p class="note" style="margin-top:12px">合併:同名存貨會更新,新嘅會加入,你獨有嘅唔會無咗。</p>
 </div>
 
 <!-- Add to home sheet -->
-<div class="sheet" id="homeSheet">
-  <div class="grab"></div>
+<div class="sheet" id="homeSheet"><div class="grab"></div>
   <h2>加到 iPhone 主畫面 <button class="x" id="homeClose">✕</button></h2>
-  <p class="note">咁樣就可以好似真 app 全螢幕開,圖示放喺主畫面,資料留喺部機。</p>
+  <p class="note">咁樣就可以好似真 app 全螢幕開,圖示放喺主畫面。</p>
   <ol class="steps">
     <li><b>用 Safari 開呢一頁</b><span>一定要 Safari,Chrome 唔得</span></li>
     <li><b>㩒底部中間嘅分享掣 ⬆️</b><span>iPhone 喺底、iPad 喺右上角</span></li>
     <li><b>揀「加入主畫面 / Add to Home Screen」</b><span>主畫面會出現 Poon's 圖示</span></li>
   </ol>
-  <p class="note">⚠️ 資料儲喺部機。如果清咗 Safari 嘅網站資料就會無,記得不時用上面嘅「同步碼」備份。</p>
   <button class="save" id="homeOk">明白</button>
 </div>
 
@@ -266,45 +269,95 @@ const SAMPLE=[
   {name:'洗潔精',cat:'清潔',unit:'支',qty:1,threshold:1,loc:'廚房',price:22,expiry:''},
 ];
 const KEY='poons:state';
-let state={family:"Poon's",items:[],settings:{defaultThreshold:1},restocked:{}};
+let state={family:"Poon's",items:[],settings:{defaultThreshold:1},restocked:{},cloudCode:'',cloudOn:false};
 let activeTab='stock',search='',editingId=null,pickedCat='糧食',scannedBarcode='';
 
 function addDays(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function money(n){return n==null||n===''?null:Number(n);}
 
-/* ---- robust storage: localStorage (hosted) → window.storage (in Claude) → memory ---- */
+/* ---- local storage ---- */
 let mem=null;
 const Store={
-  async get(){
-    try{const v=localStorage.getItem(KEY);if(v!=null)return v;}catch(e){}
-    if(window.storage){try{const r=await window.storage.get(KEY,false);if(r&&r.value)return r.value;}catch(e){}}
-    return mem;
-  },
-  async set(v){
-    mem=v;let ok=false;
-    try{localStorage.setItem(KEY,v);ok=true;}catch(e){}
-    if(!ok&&window.storage){try{await window.storage.set(KEY,v,false);}catch(e){}}
-  }
+  async get(){try{const v=localStorage.getItem(KEY);if(v!=null)return v;}catch(e){}if(window.storage){try{const r=await window.storage.get(KEY,false);if(r&&r.value)return r.value;}catch(e){}}return mem;},
+  async set(v){mem=v;let ok=false;try{localStorage.setItem(KEY,v);ok=true;}catch(e){}if(!ok&&window.storage){try{await window.storage.set(KEY,v,false);}catch(e){}}}
 };
 async function load(){const raw=await Store.get();if(raw){try{state=Object.assign(state,JSON.parse(raw));}catch(e){}}if(!state.restocked)state.restocked={};}
-async function save(){await Store.set(JSON.stringify(state));}
+async function save(){await Store.set(JSON.stringify(state));if(state.cloudOn)pushCloud();}
 
-function isLow(it){return Number(it.qty)<=Number(it.threshold||0);}
-function expInfo(it){
-  if(!it.expiry)return null;
-  const days=Math.round((new Date(it.expiry+'T00:00')-new Date(new Date().toDateString()))/86400000);
-  if(days<0)return{cls:'gone',txt:'已過期'};
-  if(days<=7)return{cls:'soon',txt:days===0?'今日到期':days+'日後到期'};
-  return{cls:'',txt:'到期 '+it.expiry.slice(5)};
+/* ---- cloud (Firebase) ---- */
+let fbReady=false,stateLoaded=false,cloudUnsub=null,pushTimer=null;
+window.__cloudReady=function(){fbReady=true;maybeAutoConnect();};
+function maybeAutoConnect(){if(fbReady&&stateLoaded&&state.cloudOn&&state.cloudCode)connectCloud();}
+function genCode(){const a=()=>Math.random().toString(36).slice(2,8).toUpperCase();return a()+'-'+a()+'-'+a();}
+function updCloudPin(){const p=document.getElementById('cloudpin');if(!p)return;if(state.cloudOn){p.className='cloudpin on';p.textContent='● 已連';}else{p.className='cloudpin off';p.textContent='● 未連';}}
+function mergeRemote(remote){
+  const key=i=>i.name+'|'+i.cat;const map=new Map((remote.items||[]).map(i=>[key(i),Object.assign({id:i.id||uid()},i)]));
+  state.items.forEach(li=>{if(!map.has(key(li)))map.set(key(li),li);});
+  state.items=[...map.values()];if(remote.family)state.family=remote.family;
 }
+async function connectCloud(){
+  if(!(window.FB&&window.FB.ready)){toast('雲端未準備好,要喺已上網嘅版本先用到');return false;}
+  if(!state.cloudCode)return false;
+  try{
+    const remote=await window.FB.read(state.cloudCode);
+    if(remote&&Array.isArray(remote.items))mergeRemote(remote);
+    state.cloudOn=true;await Store.set(JSON.stringify(state));
+    await window.FB.write(state.cloudCode,{items:state.items,family:state.family,updatedAt:Date.now()});
+    if(cloudUnsub){cloudUnsub();cloudUnsub=null;}
+    cloudUnsub=window.FB.listen(state.cloudCode,(data,pending)=>{
+      if(pending||!data)return;
+      state.items=(data.items||[]).map(i=>Object.assign({id:i.id||uid()},i));
+      if(data.family)state.family=data.family;
+      Store.set(JSON.stringify(state));applyWordmark();updCloudPin();rerender();
+    });
+    applyWordmark();updCloudPin();
+    return true;
+  }catch(e){console.warn(e);toast('連接失敗:'+(e.code||e.message||''));state.cloudOn=false;updCloudPin();return false;}
+}
+function pushCloud(){
+  if(!(window.FB&&window.FB.ready)||!state.cloudOn||!state.cloudCode)return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(async()=>{try{await window.FB.write(state.cloudCode,{items:state.items,family:state.family,updatedAt:Date.now()});}catch(e){console.warn('push fail',e);}},450);
+}
+function cloudDisconnect(){if(cloudUnsub){cloudUnsub();cloudUnsub=null;}state.cloudOn=false;save();updCloudPin();buildCloudSheet();toast('已中斷雲端,資料保留喺本機');}
+
+function buildCloudSheet(){
+  const el=document.getElementById('cloudBody');
+  if(!(window.FB&&window.FB.ready)){
+    el.innerHTML=`<p class="note">⚠️ 而家連唔到雲端。雲端同步要喺<b>已上網(GitHub Pages https)</b>嘅版本先用到,Claude 預覽框唔通外網。Host 咗再開呢度就會見到連接掣。</p>`;return;
+  }
+  if(state.cloudOn&&state.cloudCode){
+    el.innerHTML=`<p class="note">✅ <b style="color:var(--ok)">已連接</b>。呢部機嘅改動會即時同步俾用緊同一條密碼嘅家人。</p>
+      <label class="fld"><div class="lt">家庭密碼 — share 俾屋企人</div>
+      <textarea class="inp" id="cloudCodeBox" readonly onclick="this.select()" style="min-height:48px">${escapeHtml(state.cloudCode)}</textarea></label>
+      <button class="save" id="cloudCopy">📋 複製家庭密碼</button>
+      <button class="delbtn" id="cloudDisc">中斷雲端</button>`;
+    document.getElementById('cloudCopy').onclick=()=>{const t=document.getElementById('cloudCodeBox');t.select();(navigator.clipboard?navigator.clipboard.writeText(state.cloudCode):Promise.reject()).then(()=>toast('已複製密碼'),()=>toast('已複製'));};
+    document.getElementById('cloudDisc').onclick=cloudDisconnect;
+  }else{
+    el.innerHTML=`<p class="note">建立一個「家庭」會將你而家嘅存貨放上雲端,之後任何用同一條密碼嘅機都即時同步。</p>
+      <button class="save" id="cloudCreate">➕ 建立新家庭(我係第一個用)</button>
+      <div style="height:18px"></div>
+      <label class="fld"><div class="lt">或者:加入屋企人已建立嘅家庭</div>
+      <textarea class="inp" id="joinBox" placeholder="貼上屋企人俾你嘅家庭密碼…" style="min-height:48px"></textarea></label>
+      <button class="save alt" id="cloudJoin">🔗 連接呢條密碼</button>`;
+    document.getElementById('cloudCreate').onclick=async()=>{state.cloudCode=genCode();const ok=await connectCloud();if(ok){buildCloudSheet();toast('已建立!share 個密碼俾屋企人');}};
+    document.getElementById('cloudJoin').onclick=async()=>{const c=document.getElementById('joinBox').value.trim();if(!c){toast('請貼上密碼');return;}state.cloudCode=c;const ok=await connectCloud();if(ok){buildCloudSheet();go('stock');toast('已連接家庭');}};
+  }
+}
+function openCloud(){closeAllSheets();buildCloudSheet();openSheetEl('cloudSheet');}
+
+/* ---- derived ---- */
+function isLow(it){return Number(it.qty)<=Number(it.threshold||0);}
+function expInfo(it){if(!it.expiry)return null;const days=Math.round((new Date(it.expiry+'T00:00')-new Date(new Date().toDateString()))/86400000);if(days<0)return{cls:'gone',txt:'已過期'};if(days<=7)return{cls:'soon',txt:days===0?'今日到期':days+'日後到期'};return{cls:'',txt:'到期 '+it.expiry.slice(5)};}
 function lowItems(){return state.items.filter(isLow);}
 function expiringItems(){return state.items.filter(it=>{const e=expInfo(it);return e&&(e.cls==='soon'||e.cls==='gone');});}
 function restockList(){const m=new Map();lowItems().forEach(i=>m.set(i.id,i));expiringItems().forEach(i=>m.set(i.id,i));return[...m.values()];}
 
+/* ---- render ---- */
 function renderStock(){
-  const el=document.getElementById('p-stock');
-  let items=state.items.slice();
+  const el=document.getElementById('p-stock');let items=state.items.slice();
   if(search){const q=search.toLowerCase();items=items.filter(i=>i.name.toLowerCase().includes(q)||i.cat.includes(q)||(i.loc||'').toLowerCase().includes(q));}
   let html='';const lows=lowItems().length;
   if(lows>0&&!search)html+=`<div class="alert" onclick="go('restock')"><span class="bell">🔔</span><div><div class="at">${lows} 樣嘢要補貨</div><div class="as">已經跌到最低存量或以下</div></div><span class="go">›</span></div>`;
@@ -313,24 +366,18 @@ function renderStock(){
       :`<div class="empty"><div class="em">📦</div><h3>仲未有存貨</h3><p>撳右下角 <b>+</b> 加入你屋企嘅嘢,<br>跌到最低存量就會自動提你補貨。</p><button class="ghostbtn" onclick="loadSample()">＋ 加入示範存貨</button></div>`;
     return;
   }
-  CATS.forEach(c=>{
-    const inCat=items.filter(i=>i.cat===c.k);if(!inCat.length)return;
-    inCat.sort((a,b)=>(isLow(b)-isLow(a))||a.name.localeCompare(b.name));
-    html+=`<div class="cat"><span class="ico">${c.i}</span><span class="nm">${c.k}</span><span class="ct">${inCat.length}</span></div>`;
-    inCat.forEach(it=>html+=cardHtml(it));
-  });
+  CATS.forEach(c=>{const inCat=items.filter(i=>i.cat===c.k);if(!inCat.length)return;inCat.sort((a,b)=>(isLow(b)-isLow(a))||a.name.localeCompare(b.name));
+    html+=`<div class="cat"><span class="ico">${c.i}</span><span class="nm">${c.k}</span><span class="ct">${inCat.length}</span></div>`;inCat.forEach(it=>html+=cardHtml(it));});
   el.innerHTML=html;
 }
 function cardHtml(it){
   const low=isLow(it),e=expInfo(it),th=Number(it.threshold||0);
   const pct=th>0?Math.max(0,Math.min(100,(Number(it.qty)/(th*2))*100)):(it.qty>0?100:0);
-  const gcls=low?'g-low':(pct<=70?'g-mid':'g-ok');
-  const unit=it.unit?`<small>${escapeHtml(it.unit)}</small>`:'';
+  const gcls=low?'g-low':(pct<=70?'g-mid':'g-ok');const unit=it.unit?`<small>${escapeHtml(it.unit)}</small>`:'';
   let meta=[];if(it.loc)meta.push(`📍${escapeHtml(it.loc)}`);if(e)meta.push(`<span class="exp ${e.cls}">⏳${e.txt}</span>`);meta.push(`最低 ${fmt(th)}${escapeHtml(it.unit||'')}`);
-  return `<div class="card ${low?'low':''}"><div class="row1">
-    <div class="tap" onclick="openEdit('${it.id}')" style="flex:1;min-width:0">
-      <div class="name">${escapeHtml(it.name)} ${low?'<span class="badge low">需補貨</span>':'<span class="badge ok">充足</span>'}</div>
-      <div class="meta">${meta.join('')}</div></div>
+  return `<div class="card ${low?'low':''}"><div class="row1"><div class="tap" onclick="openEdit('${it.id}')" style="flex:1;min-width:0">
+    <div class="name">${escapeHtml(it.name)} ${low?'<span class="badge low">需補貨</span>':'<span class="badge ok">充足</span>'}</div>
+    <div class="meta">${meta.join('')}</div></div>
     <div class="stepper"><button onclick="bump('${it.id}',-1)">−</button><span class="qty">${fmt(it.qty)}${unit}</span><button onclick="bump('${it.id}',1)">+</button></div>
   </div><div class="gauge"><i class="${gcls}" style="width:${pct}%"></i></div></div>`;
 }
@@ -339,14 +386,8 @@ function renderRestock(){
   const cost=list.reduce((s,it)=>{const need=Math.max(0,Number(it.threshold||0)*2-Number(it.qty));const per=money(it.price);return s+(per?per*Math.max(1,Math.ceil(need||1)):0);},0);
   if(list.length===0){el.innerHTML=`<div class="empty"><div class="em">✅</div><h3>樣樣充足</h3><p>暫時冇嘢跌穿最低存量,<br>都冇嘢快到期。</p></div>`;return;}
   let html=`<div class="rsum"><div class="stat warn"><div class="n">${list.length}</div><div class="l">需要補貨</div></div><div class="stat money"><div class="n">$${Math.round(cost)}</div><div class="l">預計花費</div></div></div>`;
-  list.forEach(it=>{
-    const done=!!state.restocked[it.id],e=expInfo(it);let why=[];
-    if(isLow(it))why.push(`剩 <b>${fmt(it.qty)}${escapeHtml(it.unit||'')}</b> · 最低 ${fmt(it.threshold)}`);
-    if(e&&(e.cls==='soon'||e.cls==='gone'))why.push(`⏳${e.txt}`);
-    html+=`<div class="ritem ${done?'done':''}"><div class="check ${done?'done':''}" onclick="toggleDone('${it.id}')">${done?'✓':''}</div>
-      <div style="flex:1;min-width:0"><div class="rn">${catIcon(it.cat)} ${escapeHtml(it.name)}</div><div class="rmeta">${why.join(' · ')}</div></div>
-      <button class="restockbtn" onclick="quickRestock('${it.id}')">補貨</button></div>`;
-  });
+  list.forEach(it=>{const done=!!state.restocked[it.id],e=expInfo(it);let why=[];if(isLow(it))why.push(`剩 <b>${fmt(it.qty)}${escapeHtml(it.unit||'')}</b> · 最低 ${fmt(it.threshold)}`);if(e&&(e.cls==='soon'||e.cls==='gone'))why.push(`⏳${e.txt}`);
+    html+=`<div class="ritem ${done?'done':''}"><div class="check ${done?'done':''}" onclick="toggleDone('${it.id}')">${done?'✓':''}</div><div style="flex:1;min-width:0"><div class="rn">${catIcon(it.cat)} ${escapeHtml(it.name)}</div><div class="rmeta">${why.join(' · ')}</div></div><button class="restockbtn" onclick="quickRestock('${it.id}')">補貨</button></div>`;});
   el.innerHTML=html;
 }
 function renderSettings(){
@@ -359,7 +400,8 @@ function renderSettings(){
     </div>
     <div class="ghead">同步 / 安裝</div>
     <div class="group">
-      <div class="grow tap" onclick="openSync()"><span class="gl">🔄 全家同步(同步碼)</span><span class="gv">›</span></div>
+      <div class="grow tap" onclick="openCloud()"><span class="gl">☁️ 雲端同步(即時)</span><span class="gv">${state.cloudOn?'<span style="color:var(--ok)">已連</span>':'未連'} ›</span></div>
+      <div class="grow tap" onclick="openBackup()"><span class="gl">💾 備份 / 匯出</span><span class="gv">›</span></div>
       <div class="grow tap" onclick="openHome()"><span class="gl">📱 加到主畫面</span><span class="gv">›</span></div>
     </div>
     <div class="ghead">概覽</div>
@@ -374,22 +416,16 @@ function renderSettings(){
       <div class="grow tap" onclick="clearDone()"><span class="gl">清除「已補貨」剔號</span><span class="gv">›</span></div>
       <div class="grow tap" onclick="wipe()"><span class="gl danger">清除全部資料</span><span class="gv">›</span></div>
     </div>
-    <p class="footnote">資料儲喺呢部機。記得不時用「同步碼」備份。</p>`;
+    <p class="footnote">連咗雲端就全家即時同步。未連嗰陣資料淨係喺呢部機。</p>`;
   document.getElementById('s-family').addEventListener('change',e=>{state.family=e.target.value.trim()||"Poon's";applyWordmark();save();});
   document.getElementById('s-th').addEventListener('change',e=>{state.settings.defaultThreshold=Number(e.target.value)||0;save();});
 }
 
 function rerender(){updateBadge();if(activeTab==='stock')renderStock();else if(activeTab==='restock')renderRestock();else renderSettings();}
 function updateBadge(){const n=lowItems().length,b=document.getElementById('navbadge');b.style.display=n>0?'flex':'none';b.textContent=n;}
-function go(tab){
-  activeTab=tab;
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
-  document.getElementById('p-stock').classList.toggle('on',tab==='stock');
-  document.getElementById('p-restock').classList.toggle('on',tab==='restock');
-  document.getElementById('p-settings').classList.toggle('on',tab==='settings');
-  document.querySelector('header .searchwrap').style.display=tab==='stock'?'block':'none';
-  rerender();window.scrollTo({top:0});
-}
+function go(tab){activeTab=tab;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  document.getElementById('p-stock').classList.toggle('on',tab==='stock');document.getElementById('p-restock').classList.toggle('on',tab==='restock');document.getElementById('p-settings').classList.toggle('on',tab==='settings');
+  document.querySelector('header .searchwrap').style.display=tab==='stock'?'block':'none';rerender();window.scrollTo({top:0});}
 async function bump(id,d){const it=state.items.find(i=>i.id===id);if(!it)return;const step=(Number(it.qty)%1!==0||Number(it.threshold)%1!==0)?0.5:1;it.qty=Math.max(0,Math.round((Number(it.qty)+d*step)*100)/100);await save();rerender();}
 async function toggleDone(id){state.restocked[id]=!state.restocked[id];await save();rerender();}
 async function quickRestock(id){const it=state.items.find(i=>i.id===id);if(!it)return;const target=Number(it.threshold||0)*2||(Number(it.qty)+1);it.qty=Math.max(target,Number(it.qty)+1);delete state.restocked[id];await save();rerender();toast(`${it.name} 已補貨到 ${fmt(it.qty)}${it.unit||''}`);}
@@ -398,92 +434,45 @@ async function loadSample(){const ex=new Set(state.items.map(i=>i.name));SAMPLE.
 async function wipe(){if(!confirm('確定清除全部存貨資料?無法復原。'))return;state.items=[];state.restocked={};await save();rerender();toast('已清除');}
 
 /* ---- sheets ---- */
-function buildCatChips(){
-  document.getElementById('catChips').innerHTML=CATS.map(c=>`<button type="button" class="chip ${c.k===pickedCat?'on':''}" data-cat="${c.k}">${c.i} ${c.k}</button>`).join('');
-  document.querySelectorAll('#catChips .chip').forEach(b=>b.onclick=()=>{pickedCat=b.dataset.cat;document.querySelectorAll('#catChips .chip').forEach(x=>x.classList.toggle('on',x.dataset.cat===pickedCat));});
-}
+function buildCatChips(){document.getElementById('catChips').innerHTML=CATS.map(c=>`<button type="button" class="chip ${c.k===pickedCat?'on':''}" data-cat="${c.k}">${c.i} ${c.k}</button>`).join('');
+  document.querySelectorAll('#catChips .chip').forEach(b=>b.onclick=()=>{pickedCat=b.dataset.cat;document.querySelectorAll('#catChips .chip').forEach(x=>x.classList.toggle('on',x.dataset.cat===pickedCat));});}
 function openSheetEl(id){document.getElementById('scrim').classList.add('on');document.getElementById(id).classList.add('on');}
-function closeAllSheets(){document.getElementById('scrim').classList.remove('on');['sheet','syncSheet','homeSheet'].forEach(i=>document.getElementById(i).classList.remove('on'));}
-function openAdd(){
-  editingId=null;pickedCat='糧食';scannedBarcode='';
-  document.getElementById('sheetTitle').childNodes[0].nodeValue='新增存貨 ';
-  ['name','qty','unit','price','loc','expiry'].forEach(f=>document.getElementById('f-'+f).value='');
-  document.getElementById('f-threshold').value=state.settings.defaultThreshold;
-  document.getElementById('delBtn').style.display='none';buildCatChips();openSheetEl('sheet');
-  setTimeout(()=>document.getElementById('f-name').focus(),300);
-}
-function openEdit(id){
-  const it=state.items.find(i=>i.id===id);if(!it)return;
-  editingId=id;pickedCat=it.cat;scannedBarcode=it.barcode||'';
+function closeAllSheets(){document.getElementById('scrim').classList.remove('on');['sheet','cloudSheet','syncSheet','homeSheet'].forEach(i=>document.getElementById(i).classList.remove('on'));}
+function openAdd(){editingId=null;pickedCat='糧食';scannedBarcode='';document.getElementById('sheetTitle').childNodes[0].nodeValue='新增存貨 ';
+  ['name','qty','unit','price','loc','expiry'].forEach(f=>document.getElementById('f-'+f).value='');document.getElementById('f-threshold').value=state.settings.defaultThreshold;
+  document.getElementById('delBtn').style.display='none';buildCatChips();openSheetEl('sheet');setTimeout(()=>document.getElementById('f-name').focus(),300);}
+function openEdit(id){const it=state.items.find(i=>i.id===id);if(!it)return;editingId=id;pickedCat=it.cat;scannedBarcode=it.barcode||'';
   document.getElementById('sheetTitle').childNodes[0].nodeValue='編輯存貨 ';
-  document.getElementById('f-name').value=it.name;document.getElementById('f-qty').value=it.qty;
-  document.getElementById('f-unit').value=it.unit||'';document.getElementById('f-threshold').value=it.threshold;
-  document.getElementById('f-price').value=it.price??'';document.getElementById('f-loc').value=it.loc||'';
-  document.getElementById('f-expiry').value=it.expiry||'';
-  document.getElementById('delBtn').style.display='block';buildCatChips();openSheetEl('sheet');
-}
-async function saveItem(){
-  const name=document.getElementById('f-name').value.trim();
-  if(!name){toast('請填名稱');document.getElementById('f-name').focus();return;}
-  const data={name,cat:pickedCat,qty:Number(document.getElementById('f-qty').value)||0,
-    unit:document.getElementById('f-unit').value.trim(),threshold:Number(document.getElementById('f-threshold').value)||0,
-    price:document.getElementById('f-price').value===''?null:Number(document.getElementById('f-price').value),
-    loc:document.getElementById('f-loc').value.trim(),expiry:document.getElementById('f-expiry').value,barcode:scannedBarcode||''};
-  if(editingId)Object.assign(state.items.find(i=>i.id===editingId),data);
-  else state.items.push(Object.assign({id:uid()},data));
-  await save();closeAllSheets();go('stock');toast(editingId?'已更新':'已加入存貨');
-}
+  document.getElementById('f-name').value=it.name;document.getElementById('f-qty').value=it.qty;document.getElementById('f-unit').value=it.unit||'';
+  document.getElementById('f-threshold').value=it.threshold;document.getElementById('f-price').value=it.price??'';document.getElementById('f-loc').value=it.loc||'';document.getElementById('f-expiry').value=it.expiry||'';
+  document.getElementById('delBtn').style.display='block';buildCatChips();openSheetEl('sheet');}
+async function saveItem(){const name=document.getElementById('f-name').value.trim();if(!name){toast('請填名稱');document.getElementById('f-name').focus();return;}
+  const data={name,cat:pickedCat,qty:Number(document.getElementById('f-qty').value)||0,unit:document.getElementById('f-unit').value.trim(),threshold:Number(document.getElementById('f-threshold').value)||0,
+    price:document.getElementById('f-price').value===''?null:Number(document.getElementById('f-price').value),loc:document.getElementById('f-loc').value.trim(),expiry:document.getElementById('f-expiry').value,barcode:scannedBarcode||''};
+  if(editingId)Object.assign(state.items.find(i=>i.id===editingId),data);else state.items.push(Object.assign({id:uid()},data));
+  await save();closeAllSheets();go('stock');toast(editingId?'已更新':'已加入存貨');}
 async function delItem(){if(!editingId)return;if(!confirm('刪除呢項存貨?'))return;state.items=state.items.filter(i=>i.id!==editingId);delete state.restocked[editingId];await save();closeAllSheets();rerender();toast('已刪除');}
 
-/* ---- sync ---- */
+/* ---- backup (manual) ---- */
 function encode(){return btoa(unescape(encodeURIComponent(JSON.stringify({v:1,family:state.family,items:state.items}))));}
-function openSync(){closeAllSheets();document.getElementById('exportCode').value=encode();document.getElementById('importCode').value='';openSheetEl('syncSheet');}
-function copyCode(){const t=document.getElementById('exportCode');t.select();navigator.clipboard?.writeText(t.value).then(()=>toast('已複製同步碼'),()=>{document.execCommand('copy');toast('已複製');});}
+function openBackup(){closeAllSheets();document.getElementById('exportCode').value=encode();document.getElementById('importCode').value='';openSheetEl('syncSheet');}
+function copyCode(){const t=document.getElementById('exportCode');t.select();(navigator.clipboard?navigator.clipboard.writeText(t.value):Promise.reject()).then(()=>toast('已複製'),()=>toast('已複製'));}
 function dlCode(){const blob=new Blob([encode()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='poons-backup-'+new Date().toISOString().slice(0,10)+'.txt';a.click();toast('已下載備份');}
-async function doImport(){
-  const raw=document.getElementById('importCode').value.trim();if(!raw){toast('請貼上同步碼');return;}
-  let data;try{data=JSON.parse(decodeURIComponent(escape(atob(raw))));}catch(e){toast('同步碼讀唔到,請檢查');return;}
-  if(!data||!Array.isArray(data.items)){toast('同步碼格式唔啱');return;}
-  const byName=new Map(state.items.map(i=>[i.name+'|'+i.cat,i]));
-  let added=0,upd=0;
-  data.items.forEach(d=>{const k=d.name+'|'+d.cat;if(byName.has(k)){Object.assign(byName.get(k),d,{id:byName.get(k).id});upd++;}else{state.items.push(Object.assign({id:uid()},d,{id:uid()}));added++;}});
-  await save();closeAllSheets();go('stock');toast(`匯入完成:新增 ${added}、更新 ${upd}`);
-}
+async function doImport(){const raw=document.getElementById('importCode').value.trim();if(!raw){toast('請貼上同步碼');return;}let data;try{data=JSON.parse(decodeURIComponent(escape(atob(raw))));}catch(e){toast('讀唔到,請檢查');return;}if(!data||!Array.isArray(data.items)){toast('格式唔啱');return;}
+  const k=i=>i.name+'|'+i.cat,map=new Map(state.items.map(i=>[k(i),i]));let added=0,upd=0;data.items.forEach(d=>{if(map.has(k(d))){Object.assign(map.get(k(d)),d,{id:map.get(k(d)).id});upd++;}else{state.items.push(Object.assign({id:uid()},d,{id:uid()}));added++;}});
+  await save();closeAllSheets();go('stock');toast(`匯入完成:新增 ${added}、更新 ${upd}`);}
 function openHome(){closeAllSheets();openSheetEl('homeSheet');}
 
-/* ---- barcode scanner ---- */
+/* ---- scanner ---- */
 let qr=null;
-async function openScanner(){
-  const sc=document.getElementById('scanner');document.getElementById('scanmsg').classList.remove('on');
-  if(typeof Html5Qrcode==='undefined'){scanFail('掃描元件載入唔到,請檢查網絡。你可以直接打名。');sc.classList.add('on');return;}
-  sc.classList.add('on');
-  try{
-    qr=new Html5Qrcode('reader',{formatsToSupport:[
-      Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,
-      Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODE_128]});
-    await qr.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:160}},onScan,()=>{});
-  }catch(e){scanFail('開唔到鏡頭。請喺 Safari 用、容許鏡頭權限,而且個網址要係 https。');}
-}
-async function onScan(code){
-  await stopScanner();
-  document.getElementById('scanner').classList.add('on');
-  showScanMsg('🔍 搵緊產品…');
-  const nm=await lookupBarcode(code);
-  scannedBarcode=code;
-  const f=document.getElementById('f-name');
-  if(nm){if(!f.value)f.value=nm;toast('已識別:'+nm);}else{toast('條碼已記低('+code+'),請自己打名');}
-  document.getElementById('scanner').classList.remove('on');
-}
-async function lookupBarcode(code){
-  try{
-    const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,brands`);
-    const j=await r.json();
-    if(j.status===1&&j.product){return (j.product.brands?j.product.brands.split(',')[0]+' ':'')+(j.product.product_name||'').trim();}
-  }catch(e){}
-  return '';
-}
+async function openScanner(){const sc=document.getElementById('scanner');document.getElementById('scanmsg').classList.remove('on');
+  if(typeof Html5Qrcode==='undefined'){showScanMsg('掃描元件載入唔到,請檢查網絡。可以直接打名。');sc.classList.add('on');return;}sc.classList.add('on');
+  try{qr=new Html5Qrcode('reader',{formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODE_128]});
+    await qr.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:160}},onScan,()=>{});}catch(e){showScanMsg('開唔到鏡頭。請喺 Safari 用、容許鏡頭權限,網址要係 https。');}}
+async function onScan(code){await stopScanner();document.getElementById('scanner').classList.add('on');showScanMsg('🔍 搵緊產品…');const nm=await lookupBarcode(code);scannedBarcode=code;
+  const f=document.getElementById('f-name');if(nm){if(!f.value)f.value=nm;toast('已識別:'+nm);}else{toast('條碼已記低('+code+'),請自己打名');}document.getElementById('scanner').classList.remove('on');}
+async function lookupBarcode(code){try{const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,brands`);const j=await r.json();if(j.status===1&&j.product){return (j.product.brands?j.product.brands.split(',')[0]+' ':'')+(j.product.product_name||'').trim();}}catch(e){}return '';}
 function showScanMsg(t){const m=document.getElementById('scanmsg');m.textContent=t;m.classList.add('on');}
-function scanFail(t){showScanMsg(t);}
 async function stopScanner(){if(qr){try{await qr.stop();await qr.clear();}catch(e){}qr=null;}}
 async function closeScanner(){await stopScanner();document.getElementById('scanner').classList.remove('on');}
 
@@ -501,6 +490,7 @@ document.getElementById('saveBtn').onclick=saveItem;
 document.getElementById('delBtn').onclick=delItem;
 document.getElementById('scanOpen').onclick=openScanner;
 document.getElementById('scanCancel').onclick=closeScanner;
+document.getElementById('cloudClose').onclick=closeAllSheets;
 document.getElementById('syncClose').onclick=closeAllSheets;
 document.getElementById('homeClose').onclick=closeAllSheets;
 document.getElementById('homeOk').onclick=closeAllSheets;
@@ -511,7 +501,32 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.ta
 document.getElementById('search').addEventListener('input',e=>{search=e.target.value.trim();renderStock();});
 
 (function(){const d=new Date(),wd=['日','一','二','三','四','五','六'][d.getDay()];document.getElementById('datestrip').textContent=`${d.getMonth()+1}月${d.getDate()}日 · 星期${wd}`;})();
-(async function init(){await load();applyWordmark();document.getElementById('loading').style.display='none';rerender();})();
+(async function init(){await load();applyWordmark();updCloudPin();document.getElementById('loading').style.display='none';rerender();stateLoaded=true;maybeAutoConnect();})();
+</script>
+
+<!-- Firebase (your project: poons-d89d0) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyAG5BLer21dv5S3z3scll7bXk4hHnlLEbk",
+    authDomain: "poons-d89d0.firebaseapp.com",
+    projectId: "poons-d89d0",
+    storageBucket: "poons-d89d0.firebasestorage.app",
+    messagingSenderId: "182056539353",
+    appId: "1:182056539353:web:f015a8086f26f11a2fdac8"
+  };
+  try{
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.FB = {
+      ready: true,
+      async read(code){ const s = await getDoc(doc(db,'households',code)); return s.exists()? s.data() : null; },
+      async write(code,data){ await setDoc(doc(db,'households',code), data); },
+      listen(code,cb){ return onSnapshot(doc(db,'households',code), {includeMetadataChanges:false}, snap=>{ cb(snap.exists()?snap.data():null, snap.metadata.hasPendingWrites); }); }
+    };
+    if (window.__cloudReady) window.__cloudReady();
+  }catch(e){ console.warn('Firebase init failed', e); window.FB={ready:false}; }
 </script>
 </body>
 </html>
